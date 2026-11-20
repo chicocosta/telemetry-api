@@ -55,5 +55,15 @@ jobs:
       - name: Trigger Render deploy
         env:
           HOOK: ${{ secrets.RENDER_HOOK_API }}
+          IMAGE_URL: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/telemetry-api:${{ github.sha }}
         run: |
-            curl -fsS "${HOOK}&imgURL=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/telemetry-api:${{ github.sha }}"
+          set -euo pipefail
+          if [[ -z "$HOOK" ]]; then
+            echo "::error::O secret RENDER_HOOK_API esta vazio ou indisponivel."
+            exit 1
+          fi
+          if [[ "$HOOK" =~ [[:space:]] ]] || [[ ! "$HOOK" =~ ^https://api\.render\.com/deploy/[^/?\#]+\?key=[^\&\#]+$ ]]; then
+            echo "::error::RENDER_HOOK_API deve conter apenas a URL completa do Deploy Hook do Render, sem aspas, espacos ou quebras de linha."
+            exit 1
+          fi
+          curl -fsS --get --url "$HOOK" --data-urlencode "imgURL=$IMAGE_URL"
