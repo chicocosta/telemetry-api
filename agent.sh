@@ -2,8 +2,8 @@
 
 export LC_ALL=C
 
-API_URL="http://localhost:8080/v1/telemetry"
-API_KEY="local-dev-key-123"
+API_URL="https://telemetry-api-63ej.onrender.com/v1/telemetry"
+API_KEY="d7ea7736842b3a86bf8407e3a0ba3b686b9d7334798c1d9022379905a3c98790"
 
 echo "Starting continuous telemetry agent. Press [CTRL+C] to stop."
 
