@@ -64,5 +64,16 @@ jobs:
       - name: Trigger Render deploy for ${{ matrix.image }}
         env:
           HOOK: ${{ secrets[matrix.hook] }}
+          HOOK_NAME: ${{ matrix.hook }}
+          IMAGE_URL: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/telemetry-${{ matrix.image }}:${{ github.sha }}
         run: |
-            curl -fsS "${HOOK}&imgURL=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/telemetry-${{ matrix.image }}:${{ github.sha }}"
+          set -euo pipefail
+          if [[ -z "$HOOK" ]]; then
+            echo "::error::O secret $HOOK_NAME esta vazio ou indisponivel."
+            exit 1
+          fi
+          if [[ "$HOOK" =~ [[:space:]] ]] || [[ ! "$HOOK" =~ ^https://api\.render\.com/deploy/[^/?\#]+\?key=[^\&\#]+$ ]]; then
+            echo "::error::O secret $HOOK_NAME deve conter apenas a URL completa do Deploy Hook do Render, sem aspas, espacos ou quebras de linha."
+            exit 1
+          fi
+          curl -fsS --get --url "$HOOK" --data-urlencode "imgURL=$IMAGE_URL"
